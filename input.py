@@ -61,7 +61,7 @@ def _load_inriaperson_xml_to_boxes(path):
 
   return np.array(bbox_list)
 
-def fetch_inriaperson_dataset(img_dir, gt_dir):
+def fetch(img_dir, gt_dir):
   """Convert INRIAPerson dataset into Python lists of images and normalised groundtruth boxes
 
   Return
@@ -90,7 +90,7 @@ def fetch_inriaperson_dataset(img_dir, gt_dir):
 
   return img_list_np, gt_list_np
 
-def filter_dataset_single_person(img_list_np, gt_list_np):
+def filter_single_person(img_list_np, gt_list_np):
   """Remove images and grouthtruths pairs that contains more than one person class
   """
 
@@ -125,7 +125,7 @@ def _resize_gt_box_with_padding(x_n, width, height, new_width, new_height):
 
   return new_x_n
 
-def resize_dataset_images(img_list_np, gt_list_np, new_height, new_width):
+def resize_with_pad(img_list_np, gt_list_np, new_height, new_width):
   """Resize images and groudtruth boxes pairs into new size
   """
   if len(img_list_np) != len(gt_list_np):
@@ -153,7 +153,7 @@ def resize_dataset_images(img_list_np, gt_list_np, new_height, new_width):
 
   return img_list_np, gt_list_np
 
-def tensorfy_dataset(img_list_np, gt_list_np, num_of_category_class):
+def tensorfy(img_list_np, gt_list_np, num_of_category_class):
   """Convert images and groudtruth boxes numpy list into list of tensors
 
   Return
