@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup
 CATEGORY_PERSON_CLASS_ID = 1
 CATEGORY_INDEX = {CATEGORY_PERSON_CLASS_ID: {'id': CATEGORY_PERSON_CLASS_ID, 'name': 'person'}}
 CATEGORY_LABEL_ID_OFFSET = 1
-CATEGORY_NUMBER = 90
 
 def _load_image_into_numpy_array(path):
   """Load an image from file into a numpy array.
@@ -28,16 +27,19 @@ def _load_image_into_numpy_array(path):
     path: a file path.
 
   Returns:
-    uint8 numpy array with shape (img_height, img_width, 3)
+    uint8 numpy array with shape [img_height, img_width, 3]
   """
   img_data = tf.io.gfile.GFile(path, 'rb').read()
   image = Image.open(BytesIO(img_data))
   (im_width, im_height) = image.size
   return np.array(image.getdata()).reshape((im_height, im_width, 3))
 
-def _load_xml_annotation_into_normalised_boxes(path):
+def _load_inriaperson_xml_to_boxes(path):
   """Load the INRIAPerson dataset annotations into list of normalised
   bounding boxes with shape [N, 4]. Coordinates: [ymin, xmin, ymax, xmax]
+
+  Returns
+    A list of np.float32 array with shape [Num of detection, 4]
   """
   with open(path, 'r') as file:
     xml_file = file.read()
@@ -61,6 +63,12 @@ def _load_xml_annotation_into_normalised_boxes(path):
   return np.array(bbox_list)
 
 def fetch_inriaperson_dataset(img_dir, gt_dir):
+  """Convert INRIAPerson dataset into Python lists of images and normalised groundtruth boxes
+
+  Return
+    img_list_np: A list of np.uint8 array with shape [Height, Width, 3]
+    gt_list_np: A list of np.float32 array with shape [Num of detection, 4]
+  """
   img_list_np = []
   gt_list_np = []
   directory = os.fsencode(img_dir)
@@ -73,7 +81,7 @@ def fetch_inriaperson_dataset(img_dir, gt_dir):
       img_list_np.append(_load_image_into_numpy_array(img_filepath))
 
       gt_filepath = gt_dir + '/' + filename + '.xml'
-      gt_list_np.append(_load_xml_annotation_into_normalised_boxes(gt_filepath))
+      gt_list_np.append(_load_inriaperson_xml_to_boxes(gt_filepath))
       continue
     else:
       continue
@@ -84,6 +92,9 @@ def fetch_inriaperson_dataset(img_dir, gt_dir):
   return img_list_np, gt_list_np
 
 def filter_dataset_single_person(img_list_np, gt_list_np):
+  """Remove images and grouthtruths pairs that contains more than one person class
+  """
+
   if len(img_list_np) != len(gt_list_np):
     raise Exception("Image count is not equal to its corresponding groundtruth")
 
@@ -116,6 +127,8 @@ def _resize_gt_box_with_padding(x_n, width, height, new_width, new_height):
   return new_x_n
 
 def resize_dataset_images(img_list_np, gt_list_np, new_height, new_width):
+  """Resize images and groudtruth boxes pairs into new size
+  """
   if len(img_list_np) != len(gt_list_np):
     raise Exception("Image count is not equal to its corresponding groundtruth")
 
@@ -141,7 +154,14 @@ def resize_dataset_images(img_list_np, gt_list_np, new_height, new_width):
 
   return img_list_np, gt_list_np
 
-def tensorfy_dataset(img_list_np, gt_list_np):
+def tensorfy_dataset(img_list_np, gt_list_np, num_of_category_class):
+  """Convert images and groudtruth boxes numpy list into list of tensors
+
+  Return
+    img_list_ts: A list of tf.float32 of shape [1, None, None, 3]
+    gt_list_ts: A list of tf.float32 of shape [Num of detection, 4]
+    class_list_ts: A list of one-hot tf.float32 of shape [Num of detection, Num of class]
+  """
   img_list_ts = []
   gt_list_ts = []
   class_list_ts = []
@@ -156,6 +176,26 @@ def tensorfy_dataset(img_list_np, gt_list_np):
     # A list of 2-D tf.float32 one-hot tensor of shape [num_of_dection, num_classes]
     num_of_detection = gt_np.shape[0]
     zero_based_class = tf.convert_to_tensor(np.ones(shape=[num_of_detection], dtype=np.int32) - CATEGORY_LABEL_ID_OFFSET)
-    class_list_ts.append(tf.one_hot(zero_based_class, CATEGORY_NUMBER))
+    class_list_ts.append(tf.one_hot(zero_based_class, num_of_category_class))
 
   return img_list_ts, gt_list_ts, class_list_ts
+
+def sanity_check(img_list, gt_list, index=None):
+  """Return the suitable arguments to use object_detection.utils.visualization_utils module
+  """
+
+  print("Image list length:      ", len(img_list))
+  print("Groundtruth list length:", len(gt_list))
+
+  if index is None:
+    index = random.randrange(len(gt_list))
+  elif index >= len(img_list):
+    print("WARNING: Index is out of range, random index is assigned."")
+    index = random.randrange(len(gt_list))
+
+  img = img_list[index].copy()
+  gt = gt_list[index].copy()
+  classes = np.ones((1, len(gt)))
+  scores = None
+
+  return img, gt, classes, scores, CATEGORY_INDEX
