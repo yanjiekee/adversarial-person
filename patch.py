@@ -14,7 +14,7 @@ def init(height=100, width=100, random=False):
 
   return adversarial_patch
 
-def transform(box, patch, mask_width=640, random_size=False, random_loctation=False):
+def transform(box, patch, mask_width=640, random_size=False, random_location=False):
   """
   Generate an adversarial patch mask, with the condition that patch size is
   smaller than the box size
@@ -62,7 +62,7 @@ def transform(box, patch, mask_width=640, random_size=False, random_loctation=Fa
   imaginary_box_height = ymax_i - ymin_i
   imaginary_box_width = xmax_i - xmin_i
 
-  if random_loctation is True:
+  if random_location is True:
     # Randomly pick a location on a person
     yloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.float32))
     xloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.float32))
