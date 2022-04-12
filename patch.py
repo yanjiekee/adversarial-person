@@ -34,7 +34,7 @@ def transform(box, patch, mask_width=640, random_size=False, random_location=Fal
 
   # Get box information
   box = tf.squeeze(box)
-  denormalised_box = tf.math.round(tf.multiply(box, mask_width))
+  denormalised_box = tf.math.round(tf.multiply(box, tf.cast(mask_width, tf.float32)))
 
   ymin, xmin, ymax, xmax = tf.unstack(denormalised_box, axis=0)
   box_height = ymax - ymin
