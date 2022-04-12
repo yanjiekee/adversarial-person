@@ -74,7 +74,7 @@ def transform(box, patch, mask_width=640, random_size=False, random_location=Fal
   xstart = tf.cast(tf.clip_by_value(xmin + tf.math.round(imaginary_box_width * xloc), 0, mask_width-patch_width), dtype=tf.int32)
 
   # Expand the patch image such that patch is on the bounding box of a person
-  transformed_patch = tf.image.pad_to_bounding_box(patch, ystart, xstart, 640, 640)
+  transformed_patch = tf.image.pad_to_bounding_box(patch, ystart, xstart, mask_width, mask_width)
 
   # Padded pixel = (0, 0, 0), black pixel = (1, 1, 1)
   # Unfudge the patch such that padded pixel = (-1, -1, -1), black pixel = (0, 0, 0)
