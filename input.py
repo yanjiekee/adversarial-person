@@ -190,7 +190,7 @@ def sanity_check(img_list, gt_list, index=None):
   if index is None:
     index = random.randrange(len(gt_list))
   elif index >= len(img_list):
-    print("WARNING: Index is out of range, random index is assigned."")
+    print("WARNING: Index is out of range, random index is assigned.")
     index = random.randrange(len(gt_list))
 
   img = img_list[index].copy()
