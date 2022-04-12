@@ -1,7 +1,6 @@
 r"""Adversarial patch generation, transformation, and application"""
 
 import tensorflow as tf
-import
 
 def initialise_patch(height=100, width=100, random=False):
   """Initialise a tf.Variable with shape (1, height, width, 3)"""
