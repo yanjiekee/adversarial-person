@@ -2,7 +2,7 @@ r"""Adversarial patch generation, transformation, and application"""
 
 import tensorflow as tf
 
-def initialise_patch(height=100, width=100, random=False):
+def init(height=100, width=100, random=False):
   """Initialise a tf.Variable with shape (1, height, width, 3)"""
 
   if random is True:
@@ -14,7 +14,7 @@ def initialise_patch(height=100, width=100, random=False):
 
   return adversarial_patch
 
-def transform_patch(box, patch, mask_width=640, random_size=False, random_loctation=False):
+def transform(box, patch, mask_width=640, random_size=False, random_loctation=False):
   """
   Generate an adversarial patch mask, with the condition that patch size is
   smaller than the box size
@@ -83,7 +83,7 @@ def transform_patch(box, patch, mask_width=640, random_size=False, random_loctat
 
   return tf.expand_dims(transformed_patch, axis=0)
 
-def apply_patch(image, patch):
+def apply(image, patch):
   """
   Apply patch mask onto image
 
