@@ -14,7 +14,7 @@ def initialise_patch(height=100, width=100, random=False):
 
   return adversarial_patch
 
-  def transform_patch(box, patch, mask_width=640, random_size=False, random_loctation=False):
+def transform_patch(box, patch, mask_width=640, random_size=False, random_loctation=False):
   """
   Generate an adversarial patch mask, with the condition that patch size is
   smaller than the box size
