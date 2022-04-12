@@ -2,8 +2,7 @@ r"""Dataset input pipeline from INRIAPerson dataset"""
 
 import tensorflow as tf
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
+
 import os
 import random
 
@@ -179,23 +178,3 @@ def tensorfy_dataset(img_list_np, gt_list_np, num_of_category_class):
     class_list_ts.append(tf.one_hot(zero_based_class, num_of_category_class))
 
   return img_list_ts, gt_list_ts, class_list_ts
-
-def sanity_check(img_list, gt_list, index=None):
-  """Return the suitable arguments to use object_detection.utils.visualization_utils module
-  """
-
-  print("Image list length:      ", len(img_list))
-  print("Groundtruth list length:", len(gt_list))
-
-  if index is None:
-    index = random.randrange(len(gt_list))
-  elif index >= len(img_list):
-    print("WARNING: Index is out of range, random index is assigned.")
-    index = random.randrange(len(gt_list))
-
-  img = img_list[index].copy()
-  gt = gt_list[index].copy()
-  classes = np.ones((1, len(gt)))
-  scores = None
-
-  return img, gt, classes, scores, CATEGORY_INDEX
