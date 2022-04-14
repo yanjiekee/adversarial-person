@@ -14,10 +14,19 @@ def init(height=100, width=100, random=False):
 
   return adversarial_patch
 
-def transform(box, patch, mask_width=640, random_size=False, random_location=False):
+@tf.function(input_signature=(
+    tf.TensorSpec(shape=[1, 4], dtype=tf.float32),
+    tf.TensorSpec(shape=[1, 100, 100, 3], dtype=tf.float32),
+    tf.TensorSpec(shape=[], dtype=tf.float32),
+    tf.TensorSpec(shape=[], dtype=tf.bool),
+    tf.TensorSpec(shape=[], dtype=tf.bool)
+))
+def transform(box, patch,
+              mask_width=tf.constant(1024, tf.float32),
+              random_size=tf.constant(False),
+              random_location=tf.constant(False)):
   """
-  Generate an adversarial patch mask, with the condition that patch size is
-  smaller than the box size
+  Generate an adversarial patch mask
 
   Argument:
     box - A bounding boxes normalised coordinates with shape (1, 4)
@@ -33,8 +42,7 @@ def transform(box, patch, mask_width=640, random_size=False, random_location=Fal
   #TODO: Environment transformation of the adversarial patch
 
   # Get box information
-  box = tf.squeeze(box)
-  denormalised_box = tf.math.round(tf.multiply(box, tf.cast(mask_width, tf.float32)))
+  denormalised_box = tf.math.round(tf.multiply(tf.squeeze(box), mask_width))
 
   ymin, xmin, ymax, xmax = tf.unstack(denormalised_box, axis=0)
   box_height = ymax - ymin
@@ -46,32 +54,24 @@ def transform(box, patch, mask_width=640, random_size=False, random_location=Fal
   else:
     patch_to_box_factor = tf.constant(0.5, tf.float32)
 
-  patch_height = tf.multiply(tf.where(box_height > box_width, box_width, box_height), patch_to_box_factor)
-  patch_width = patch_height
-
-  patch = tf.squeeze(patch)
-  patch = tf.image.resize(patch, size=[patch_height, patch_width])
+  patch_width = tf.math.round(tf.multiply(tf.where(box_height > box_width, box_width, box_height), patch_to_box_factor))
+  patch = tf.image.resize(tf.squeeze(patch), size=[patch_width, patch_width])
 
   # Create an imaginary box for the top-left corner of the patch
-  ymin_i = ymin
-  xmin_i = xmin
-  ymax_i = ymax - patch_height
-  xmax_i = xmax - patch_width
-
-  imaginary_box = tf.clip_by_value(tf.stack([ymin_i, xmin_i, ymax_i, xmax_i], axis=0), clip_value_min=0, clip_value_max=mask_width)
-  imaginary_box_height = ymax_i - ymin_i
-  imaginary_box_width = xmax_i - xmin_i
+  imaginary_box_height = box_height - patch_width
+  imaginary_box_width = box_width - patch_width
 
   if random_location is True:
     # Randomly pick a location on a person
-    yloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.float32))
-    xloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.float32))
+    yloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0.4, maxval=0.6, dtype=tf.float32))
+    xloc = tf.squeeze(tf.random.uniform(shape=[1], minval=0.4, maxval=0.6, dtype=tf.float32))
   else:
     yloc = tf.constant(0.5, tf.float32)
     xloc = tf.constant(0.5, tf.float32)
 
-  ystart = tf.cast(tf.clip_by_value(ymin + tf.math.round(imaginary_box_height * yloc), 0, mask_width-patch_height), dtype=tf.int32)
-  xstart = tf.cast(tf.clip_by_value(xmin + tf.math.round(imaginary_box_width * xloc), 0, mask_width-patch_width), dtype=tf.int32)
+  ystart = tf.cast(tf.clip_by_value(ymin + tf.math.round(imaginary_box_height * yloc), 0, mask_width-patch_width), tf.int32)
+  xstart = tf.cast(tf.clip_by_value(xmin + tf.math.round(imaginary_box_width * xloc), 0, mask_width-patch_width), tf.int32)
+  mask_width = tf.cast(mask_width, tf.int32)
 
   # Expand the patch image such that patch is on the bounding box of a person
   transformed_patch = tf.image.pad_to_bounding_box(patch, ystart, xstart, mask_width, mask_width)
@@ -83,6 +83,10 @@ def transform(box, patch, mask_width=640, random_size=False, random_location=Fal
 
   return tf.expand_dims(transformed_patch, axis=0)
 
+@tf.function(input_signature=(
+    tf.TensorSpec(shape=[1, 1024, 1024, 3], dtype=tf.float32),
+    tf.TensorSpec(shape=[1, 1024, 1024, 3], dtype=tf.float32)
+))
 def apply(image, patch):
   """
   Apply patch mask onto image
