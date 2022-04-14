@@ -3,14 +3,14 @@ r"""Adversarial patch generation, transformation, and application"""
 import tensorflow as tf
 
 def init(height=100, width=100, random=False):
-  """Initialise a tf.Variable with shape (1, height, width, 3)"""
+  """Initialise a tf.Variable with shape (1, height, width, 3) with value 0.0 - 1.0"""
 
   if random is True:
     random = tf.random.Generator.from_seed(1)
-    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=0, maxval=255, dtype=tf.float32)
+    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=0, maxval=1, dtype=tf.float32)
     adversarial_patch = tf.Variable(adversarial_patch, dtype=tf.float32)
   else:
-    adversarial_patch = tf.Variable(tf.constant(127.0, shape=[1, height, width, 3], dtype=tf.float32), dtype=tf.float32)
+    adversarial_patch = tf.Variable(tf.constant(0.5, shape=[1, height, width, 3], dtype=tf.float32), dtype=tf.float32)
 
   return adversarial_patch
 
@@ -98,8 +98,6 @@ def apply(image, patch):
   Return:
     An the combination of image and patch
   """
-  patch = tf.squeeze(patch)
-  image = tf.squeeze(image)
   applied_patch = tf.where(patch == -1, image, patch)
 
-  return tf.expand_dims(tf.cast(applied_patch, tf.float32), axis=0)
+  return applied_patch
