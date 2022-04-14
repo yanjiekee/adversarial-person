@@ -87,8 +87,8 @@ def print_loss_history_plot(loss_history, sampling_rate, size=None):
   ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 def print_and_save_loss_history_plot(loss_history, sampling_rate, dir, size=None):
-    """Print the loss history plot and save it as PNG
-    """
+  """Print the loss history plot and save it as PNG
+  """
   length = len(loss_history)
   stop = length * sampling_rate
 
