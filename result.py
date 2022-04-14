@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import configparser
 import pandas as pd
 import datetime
 import os
@@ -11,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from google.colab import drive
 
-def init_result():
+def init():
   """Mount google drive and create a result folder with current date & time, return folder path
   """
   # Mount google drive
