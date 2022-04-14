@@ -22,14 +22,17 @@ def init():
   if not os.path.isdir(drive_dir):
     os.mkdir(drive_dir)
 
-  # Create new record folder in the dir with date & time
-  ct = datetime.datetime.now()
-  filename = f"{ct.year}-{ct.month}-{ct.day}_{ct.hour}:{ct.minute}:{ct.second}"
-  result_dir = os.path.join(drive_dir, filename)
-  if not os.path.isdir(result_dir):
-    os.mkdir(result_dir)
+  return drive_dir
 
-  return result_dir
+def new_record(drive_dir):
+    # Create new record folder in the dir with date & time
+    ct = datetime.datetime.now()
+    filename = f"{ct.year}-{ct.month}-{ct.day}_{ct.hour}:{ct.minute}:{ct.second}"
+    result_dir = os.path.join(drive_dir, filename)
+    if not os.path.isdir(result_dir):
+      os.mkdir(result_dir)
+
+    return result_dir
 
 def store_adv_checkpoint(variable, dir):
   adv_checkpoint = tf.train.Checkpoint(patch=variable)
