@@ -23,7 +23,7 @@ def init():
   if not os.path.isdir(drive_result_dir):
     os.mkdir(drive_result_dir)
 
-  drive_result_dir = "/content/drive/MyDrive/Adversarial/result"
+  drive_result_dir = "/content/drive/MyDrive/Adversarial/results"
   if not os.path.isdir(drive_result_dir):
     os.mkdir(drive_result_dir)
 
