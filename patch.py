@@ -14,7 +14,7 @@ def init(height=100, width=100, random=False):
   return adversarial_patch
 
 @tf.function(input_signature=(
-    tf.TensorSpec(shape=[1, 4], dtype=tf.float32),
+    tf.TensorSpec(shape=[4], dtype=tf.float32),
     tf.TensorSpec(shape=[1, 100, 100, 3], dtype=tf.float32),
     tf.TensorSpec(shape=[], dtype=tf.float32),
     tf.TensorSpec(shape=[], dtype=tf.bool),
@@ -41,7 +41,7 @@ def transform(box, patch,
   #TODO: Environment transformation of the adversarial patch
 
   # Get box information
-  denormalised_box = tf.math.round(tf.multiply(tf.squeeze(box), mask_width))
+  denormalised_box = tf.math.round(tf.multiply(box, mask_width))
 
   ymin, xmin, ymax, xmax = tf.unstack(denormalised_box, axis=0)
   box_height = ymax - ymin
