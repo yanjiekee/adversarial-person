@@ -9,9 +9,6 @@ import random
 from PIL import Image
 from six import BytesIO
 
-CATEGORY_PERSON_CLASS_ID = 1
-CATEGORY_LABEL_ID_OFFSET = 1
-
 def _load_image_into_numpy_array(path):
   """Load an image from file into a numpy array.
 
@@ -55,13 +52,12 @@ def tensorfy_and_resize_img(img_list_np, size):
 
   return img_list_ts
 
-def get_label_fn(model, img_size):
-
+def get_label_dataset_fn(model, img_size):
   # Create a graph execution for faster future use
   @tf.function(input_signature=(
       tf.TensorSpec(shape=(1, img_size, img_size, 3), dtype=tf.float32),
   ))
-  def detect(input_tensor):
+  def model_selfdetect(input_tensor):
     preprocessed_image, shapes = model.preprocess(input_tensor)
     prediction_dict = model.predict(preprocessed_image, shapes)
     return model.postprocess(prediction_dict, shapes)
@@ -73,7 +69,7 @@ def get_label_fn(model, img_size):
     class_list_np = []
 
     for id, img in enumerate(img_list_ts):
-      predictions = detect(img)
+      predictions = model_selfdetect(img)
       n = int(tf.squeeze(predictions['num_detections']))
       boxes = np.zeros(shape=(n,4))
       classes = np.zeros(shape=n)
@@ -92,15 +88,14 @@ def get_label_fn(model, img_size):
 
   return label_dataset_fn
 
-def filter_no_person(img_list_ts, box_list_np, class_list_np):
+def filter_no_person(img_list_ts, box_list_np, class_list_np, person_class_id):
   """Remove data with no person detected
   """
-
   num_of_removed_item = 0
   for id in range(len(img_list_ts)):
     num_of_person = 0
     for c in class_list_np[id - num_of_removed_item]:
-      if c == CATEGORY_PERSON_CLASS_ID:
+      if c == person_class_id:
         num_of_person += 1
 
     if num_of_person == 0:
@@ -112,7 +107,7 @@ def filter_no_person(img_list_ts, box_list_np, class_list_np):
 
   return img_list_ts, box_list_np, class_list_np
 
-def filter_multiple_person(img_list_ts, box_list_np, class_list_np):
+def filter_multiple_person(img_list_ts, box_list_np, class_list_np, person_class_id):
   """Remove data with more than one person detected
   """
 
@@ -120,7 +115,7 @@ def filter_multiple_person(img_list_ts, box_list_np, class_list_np):
   for id in range(len(img_list_ts)):
     num_of_person = 0
     for c in class_list_np[id - num_of_removed_item]:
-      if c == CATEGORY_PERSON_CLASS_ID:
+      if c == person_class_id:
         num_of_person += 1
         if num_of_person > 1:
           # Remove list[id]
@@ -150,18 +145,16 @@ def filter_single_detection(img_list_ts, box_list_np, class_list_np):
 
   return img_list_ts, box_list_np, class_list_np
 
-def generate_mallicious_gt(box_list_np, class_list_np):
+def generate_mallicious_gt(box_list_np, class_list_np, person_class_id):
   """Select the person class with highest confidence and remove it from
   the dataset list, return the detection's bounding boxes to generate
   adversarial image
   """
-  CATEGORY_INDEX_PERSON = 1
-
   adv_box_list_np = []
 
   for i in range(len(box_list_np)):
     for j in range(len(class_list_np[i])):
-      if class_list_np[i][j] == CATEGORY_INDEX_PERSON:
+      if class_list_np[i][j] == person_class_id:
         adv_box_list_np.append(box_list_np[i][j])
         box_list_np[i] = np.delete(box_list_np[i], j, axis=0)
         class_list_np[i] = np.delete(class_list_np[i], j)
