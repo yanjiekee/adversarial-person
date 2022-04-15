@@ -162,7 +162,7 @@ def generate_mallicious_gt(box_list_np, class_list_np, person_class_id):
         mal_class_list_np.append(np.delete(class_list_np[i], j))
         break
 
-  return box_list_np, mal_box_list_np, mal_class_list_np
+  return mal_box_list_np, mal_class_list_np, adv_box_list_np
 
 def tensorfy_gt(box_list_np, class_list_np, adv_box_list_np, num_of_category):
   """Convert numpy list to tensor, including the one-hot class list
