@@ -45,7 +45,7 @@ def fetch(img_dir):
 
   return img_list_np
 
-def tensorfy(img_list_np, size):
+def tensorfy_and_resize_img(img_list_np, size):
   """Convert to tensor and resize to fit detect()'s input signature which is
   tf.float32 shape [1, 1024, 1024, 3]
   """
@@ -66,7 +66,7 @@ def get_label_fn(model, img_size):
     prediction_dict = model.predict(preprocessed_image, shapes)
     return model.postprocess(prediction_dict, shapes)
 
-  def label(img_list_ts):
+  def label_dataset_fn(img_list_ts):
     """Generate groundtruth boxes, class using detection model
     """
     box_list_np = []
@@ -90,7 +90,7 @@ def get_label_fn(model, img_size):
 
     return box_list_np, class_list_np
 
-  return label
+  return label_dataset_fn
 
 def filter_no_person(img_list_ts, box_list_np, class_list_np):
   """Remove data with no person detected
