@@ -151,16 +151,18 @@ def generate_mallicious_gt(box_list_np, class_list_np, person_class_id):
   adversarial image
   """
   adv_box_list_np = []
+  mal_box_list_np = []
+  mal_class_list_np = []
 
   for i in range(len(box_list_np)):
     for j in range(len(class_list_np[i])):
       if class_list_np[i][j] == person_class_id:
         adv_box_list_np.append(box_list_np[i][j])
-        box_list_np[i] = np.delete(box_list_np[i], j, axis=0)
-        class_list_np[i] = np.delete(class_list_np[i], j)
+        mal_box_list_np.append(np.delete(box_list_np[i], j, axis=0))
+        mal_class_list_np.append(np.delete(class_list_np[i], j))
         break
 
-  return box_list_np, class_list_np, adv_box_list_np
+  return box_list_np, mal_box_list_np, mal_class_list_np
 
 def tensorfy_gt(box_list_np, class_list_np, adv_box_list_np, num_of_category):
   """Convert numpy list to tensor, including the one-hot class list
