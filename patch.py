@@ -8,9 +8,8 @@ def init(height=100, width=100, random=False):
   if random is True:
     random = tf.random.Generator.from_seed(1)
     adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=0, maxval=1, dtype=tf.float32)
-    adversarial_patch = tf.Variable(adversarial_patch, dtype=tf.float32)
   else:
-    adversarial_patch = tf.Variable(tf.constant(0.5, shape=[1, height, width, 3], dtype=tf.float32), dtype=tf.float32)
+    adversarial_patch = tf.constant(0.5, shape=[1, height, width, 3], dtype=tf.float32)
 
   return adversarial_patch
 
