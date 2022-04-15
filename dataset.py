@@ -48,7 +48,7 @@ def tensorfy_and_resize_img(img_list_np, size):
   """
   img_list_ts = []
   for img in img_list_np:
-    img_list_ts.append(tf.expand_dims(tf.image.resize_with_pad(tf.convert_to_tensor(img, tf.float32), size, size), axis=0))
+    img_list_ts.append(tf.expand_dims(tf.cast(tf.image.resize_with_pad(tf.convert_to_tensor(img), size, size), tf.float32), axis=0))
 
   return img_list_ts
 
