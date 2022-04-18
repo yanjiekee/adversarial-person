@@ -1,17 +1,24 @@
 r"""Adversarial patch generation, transformation, and application"""
 
 import tensorflow as tf
+import matplotlib
+import matplotlib.pyplot as plt
 
 def init(height=100, width=100, random=False):
   """Initialise a tf.Variable with shape (1, height, width, 3) with value 0.0 - 1.0"""
 
   if random is True:
     random = tf.random.Generator.from_seed(1)
-    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=0, maxval=1, dtype=tf.float32)
+    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=-1, maxval=1, dtype=tf.float32)
   else:
-    adversarial_patch = tf.constant(0.5, shape=[1, height, width, 3], dtype=tf.float32)
+    adversarial_patch = tf.constant(0.0, shape=[1, height, width, 3], dtype=tf.float32)
 
   return adversarial_patch
+
+def print(patch):
+  """Print adversarial patch using matplotlib"""
+  scaled_patch = tf.divide(tf.add(patch, 1.0), 2.0)
+  plt.imshow(scaled_patch.numpy()[0])
 
 @tf.function(input_signature=(
     tf.TensorSpec(shape=[4], dtype=tf.float32),
@@ -35,8 +42,8 @@ def transform(box, patch,
     An adversarial patch mask of shape (1, 640, 640, 3) where irrelevant spaces are
     occupied with constant -1
   """
-  # Fudge patch such that there're no black [0, 0, 0] pixel
-  patch = tf.add(patch, 1)
+  # Fudge patch such that range change from [-1, 1] to [1, 3]
+  patch = tf.add(patch, 2)
 
   #TODO: Environment transformation of the adversarial patch
 
@@ -75,10 +82,9 @@ def transform(box, patch,
   # Expand the patch image such that patch is on the bounding box of a person
   transformed_patch = tf.image.pad_to_bounding_box(patch, ystart, xstart, mask_width, mask_width)
 
-  # Padded pixel = (0, 0, 0), black pixel = (1, 1, 1)
-  # Unfudge the patch such that padded pixel = (-1, -1, -1), black pixel = (0, 0, 0)
-  # This will cause clipping warning when display using matplotlib
-  transformed_patch = tf.subtract(transformed_patch, 1)
+  # Padded pixel = [0.0]
+  # Fudge the actual pixel back to [-1, 1] and the padded pixels are now [-2.0]
+  transformed_patch = tf.subtract(transformed_patch, 2)
 
   return tf.expand_dims(transformed_patch, axis=0)
 
@@ -97,6 +103,6 @@ def apply(image, patch):
   Return:
     An the combination of image and patch
   """
-  applied_patch = tf.where(patch == -1, image, patch)
+  applied_patch = tf.where(patch == -2.0, image, patch)
 
   return applied_patch
