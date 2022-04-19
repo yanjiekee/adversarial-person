@@ -179,3 +179,26 @@ def tensorfy_gt(box_list_np, class_list_np, adv_box_list_np, num_of_category):
     class_list_one_hot_ts.append(tf.one_hot(zero_indexed_class_ts, num_of_category, dtype=tf.float32))
 
   return box_list_ts, class_list_one_hot_ts, adv_box_list_ts
+
+def split(img_list, box_list, class_list, adv_box_list, split):
+  """Split dataset according to the split ratio where "b" is the split size
+  """
+  full_size = len(adv_box_list)
+  split_size = round(full_size * split)
+
+  all_keys = list(range(full_size))
+  random.shuffle(all_keys)
+  keys_a = all_keys[split_size:]
+  keys_b = all_keys[:split_size]
+
+  img_list_a      = [img_list[key] for key in keys_a]
+  box_list_a      = [box_list[key] for key in keys_a]
+  class_list_a    = [class_list[key] for key in keys_a]
+  adv_box_list_a  = [adv_box_list[key] for key in keys_a]
+
+  img_list_b     = [img_list[key] for key in keys_b]
+  box_list_b     = [box_list[key] for key in keys_b]
+  class_list_b   = [class_list[key] for key in keys_b]
+  adv_box_list_b = [adv_box_list[key] for key in keys_b]
+
+  return img_list_a, box_list_a, class_list_a, adv_box_list_a, img_list_b, box_list_b, class_list_b, adv_box_list_b
