@@ -67,7 +67,7 @@ def retrieve_loss_history_csv(filepath):
   df = pd.read_csv(filepath)
   x, y = np.moveaxis(df.to_numpy(), source=1, destination=0)
 
-  sampling_rate = x[1] / y[1]
+  sampling_rate = x[1]
   loss_history = y
 
   return loss_history, sampling_rate
