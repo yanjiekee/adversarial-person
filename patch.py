@@ -4,11 +4,11 @@ import tensorflow as tf
 import matplotlib
 import matplotlib.pyplot as plt
 
-def init(height=100, width=100, random=False):
+def init(height=100, width=100, random=False, random_seed=14):
   """Initialise a tf.Variable with shape (1, height, width, 3) with value 0.0 - 1.0"""
 
   if random is True:
-    random = tf.random.Generator.from_seed(1)
+    random = tf.random.Generator.from_seed(random_seed)
     adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=-1, maxval=1, dtype=tf.float32)
   else:
     adversarial_patch = tf.constant(0.0, shape=[1, height, width, 3], dtype=tf.float32)
