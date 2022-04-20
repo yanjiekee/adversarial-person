@@ -202,3 +202,20 @@ def split(img_list, box_list, class_list, adv_box_list, split):
   adv_box_list_b = [adv_box_list[key] for key in keys_b]
 
   return img_list_a, box_list_a, class_list_a, adv_box_list_a, img_list_b, box_list_b, class_list_b, adv_box_list_b
+
+def batch(img_list, box_list, class_list, adv_box_list, batch_ratio):
+  """Sample a batch of dataset randomly according to the batch ratio
+  """
+  full_size = len(adv_box_list)
+  batch_size = round(full_size * batch_ratio)
+
+  all_keys = list(range(full_size))
+  random.shuffle(all_keys)
+  keys = all_keys[split_size:]
+
+  img_batch      = [img_list[key] for key in keys]
+  box_batch      = [box_list[key] for key in keys]
+  class_batch    = [class_list[key] for key in keys]
+  adv_box_batch  = [adv_box_list[key] for key in keys]
+
+  return img_batch, box_batch, class_batch, adv_box_batch
