@@ -89,16 +89,16 @@ def transform(box, patch,
   return tf.expand_dims(transformed_patch, axis=0)
 
 @tf.function(input_signature=(
-    tf.TensorSpec(shape=[1, 1024, 1024, 3], dtype=tf.float32),
-    tf.TensorSpec(shape=[1, 1024, 1024, 3], dtype=tf.float32)
+    tf.TensorSpec(shape=[None, 1024, 1024, 3], dtype=tf.float32),
+    tf.TensorSpec(shape=[None, 1024, 1024, 3], dtype=tf.float32)
 ))
 def apply(image, patch):
   """
   Apply patch mask onto image
 
   Argument:
-    image - A tf.float32 image with shape (1, 640, 640, 3)
-    patch - An tf.float32 adversarial patch mask of shape (1, 640, 640, 3)
+    image - A tf.float32 image with shape (batch_size, 640, 640, 3)
+    patch - An tf.float32 adversarial patch mask of shape (batch_size, 640, 640, 3)
 
   Return:
     An the combination of image and patch
