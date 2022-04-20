@@ -18,8 +18,8 @@ def init(height=100, width=100, random=False, random_seed=14):
 
 def print(patch):
   """Print adversarial patch using matplotlib"""
-  scaled_patch = ts.squeeze(tf.divide(tf.add(patch, 1.0), 2.0))
-  plt.imshow(scaled_patch.numpy())
+  squeezed_patch = ts.squeeze(patch)
+  plt.imshow(squeezed_patch.numpy())
 
 @tf.function(input_signature=(
     tf.TensorSpec(shape=[4], dtype=tf.float32),
@@ -36,7 +36,7 @@ def transform(box, patch,
   Generate an adversarial patch mask
 
   Argument:
-    box - A bounding boxes normalised coordinates of shape (1, 4)
+    box - A bounding boxes normalised coordinates of shape (4)
     patch - A tf.Variable training adversarial patch of shape (1, 100, 100, 3) with range [0, 1]
 
   Return:
