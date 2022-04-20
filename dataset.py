@@ -145,7 +145,7 @@ def filter_single_detection(img_list_ts, box_list_np, class_list_np):
 
   return img_list_ts, box_list_np, class_list_np
 
-def generate_mallicious_gt(box_list_np, class_list_np, person_class_id):
+def generate_mallicious_objectness_gt(box_list_np, class_list_np, person_class_id):
   """Select the person class with highest confidence and remove it from
   the dataset list, return the detection's bounding boxes to generate
   adversarial image
@@ -163,6 +163,23 @@ def generate_mallicious_gt(box_list_np, class_list_np, person_class_id):
         break
 
   return mal_box_list_np, mal_class_list_np, adv_box_list_np
+
+def generate_mallicious_classification_gt(box_list_np, class_list_np, person_class_id, mallicious_class_id):
+  """Select the person class with highest confidence and modify its class to
+  a mallicious class, return the detection's bounding boxes to generate
+  adversarial image
+  """
+  adv_box_list_np = []
+  mal_class_list_np = class_list_np
+
+  for i in range(len(box_list_np)):
+    for j in range(len(mal_class_list_np[i])):
+      if mal_class_list_np[i][j] == person_class_id:
+        adv_box_list_np.append(box_list_np[i][j])
+        mal_class_list_np[i][j] = mallicious_class_id
+        break
+
+  return mal_class_list_np, adv_box_list_np
 
 def tensorfy_gt(box_list_np, class_list_np, adv_box_list_np, num_of_category):
   """Convert numpy list to tensor, including the one-hot class list
