@@ -18,7 +18,7 @@ def init(height=100, width=100, random=False, random_seed=14):
 
 def print(patch):
   """Print adversarial patch using matplotlib"""
-  squeezed_patch = ts.squeeze(patch)
+  squeezed_patch = tf.squeeze(patch)
   plt.imshow(squeezed_patch.numpy())
 
 @tf.function(input_signature=(
