@@ -5,20 +5,21 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 def init(height=100, width=100, random=False, random_seed=14):
-  """Initialise a tf.Variable with shape (1, height, width, 3) with value 0.0 - 1.0"""
+  """Return a tf.constant with shape (1, height, width, 3) with value [0, 1]
+  """
 
   if random is True:
     random = tf.random.Generator.from_seed(random_seed)
-    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=-1, maxval=1, dtype=tf.float32)
+    adversarial_patch = random.uniform(shape=(1, height, width, 3), minval=0, maxval=1, dtype=tf.float32)
   else:
-    adversarial_patch = tf.constant(0.0, shape=[1, height, width, 3], dtype=tf.float32)
+    adversarial_patch = tf.constant(0.5, shape=[1, height, width, 3], dtype=tf.float32)
 
   return adversarial_patch
 
 def print(patch):
   """Print adversarial patch using matplotlib"""
-  scaled_patch = tf.divide(tf.add(patch, 1.0), 2.0)
-  plt.imshow(scaled_patch.numpy()[0])
+  scaled_patch = ts.squeeze(tf.divide(tf.add(patch, 1.0), 2.0))
+  plt.imshow(scaled_patch.numpy())
 
 @tf.function(input_signature=(
     tf.TensorSpec(shape=[4], dtype=tf.float32),
@@ -35,17 +36,14 @@ def transform(box, patch,
   Generate an adversarial patch mask
 
   Argument:
-    box - A bounding boxes normalised coordinates with shape (1, 4)
-    patch - A tf.Variable training adversarial patch of shape (1, None, None, 3)
+    box - A bounding boxes normalised coordinates of shape (1, 4)
+    patch - A tf.Variable training adversarial patch of shape (1, 100, 100, 3) with range [0, 1]
 
   Return:
-    An adversarial patch mask of shape (1, 640, 640, 3) where irrelevant spaces are
-    occupied with constant -1
+    An adversarial patch mask of shape (1, 640, 640, 3) with range [0, 255], and where irrelevant spaces are occupied with constant -1
   """
-  # Fudge patch such that range change from [-1, 1] to [1, 3]
-  patch = tf.add(patch, 2)
-
-  #TODO: Environment transformation of the adversarial patch
+  # Convert patch to range [0, 255], then fudge the patch by 1 such that the black pixel is (1, 1, 1) instead of (0, 0, 0)
+  patch = tf.add(tf.math.round(tf.multiply(tf.squeeze(patch), 255.0)), 1.0)
 
   # Get box information
   denormalised_box = tf.math.round(tf.multiply(box, mask_width))
@@ -61,7 +59,7 @@ def transform(box, patch,
     patch_to_box_factor = tf.constant(0.5, tf.float32)
 
   patch_width = tf.math.round(tf.multiply(tf.where(box_height > box_width, box_width, box_height), patch_to_box_factor))
-  patch = tf.image.resize(tf.squeeze(patch), size=[patch_width, patch_width])
+  patch = tf.image.resize(patch, size=[patch_width, patch_width])
 
   # Create an imaginary box for the top-left corner of the patch
   imaginary_box_height = box_height - patch_width
@@ -83,7 +81,7 @@ def transform(box, patch,
   transformed_patch = tf.image.pad_to_bounding_box(patch, ystart, xstart, mask_width, mask_width)
 
   # Padded pixel = [0.0]
-  # Fudge the actual pixel back to [-1, 1] and the padded pixels are now [-2.0]
+  # Fudge the actual black pixel back to (0, 0, 0) whereas the padded area are now (-1, -1, -1)
   transformed_patch = tf.subtract(transformed_patch, 2)
 
   return tf.expand_dims(transformed_patch, axis=0)
@@ -103,6 +101,6 @@ def apply(image, patch):
   Return:
     An the combination of image and patch
   """
-  applied_patch = tf.where(patch == -2.0, image, patch)
+  applied_patch = tf.where(patch == -1.0, image, patch)
 
   return applied_patch
