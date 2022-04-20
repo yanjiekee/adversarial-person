@@ -72,14 +72,23 @@ def retrieve_loss_history_csv(filepath):
 
   return loss_history, sampling_rate
 
-def print_loss_history_plot(loss_history, sampling_rate, size=None):
+def print_loss_history_plot(loss_history, sampling_rate, start=None, stop=None, size=None):
   """Print the loss history plot
   """
   length = len(loss_history)
-  stop = length * sampling_rate
+  iteration_length = length * sampling_rate
 
-  x = np.arange(start=0, stop=stop, step=sampling_rate).astype(int)
-  y = loss_history
+  if start == None:
+    start = 0
+  else:
+    start = sampling_rate * int(start/sampling_rate)
+  if stop == None:
+    stop = iteration_length
+  else:
+    stop = sampling_rate * int(stop/sampling_rate)
+
+  x = np.arange(start=start, stop=stop, step=sampling_rate).astype(int)
+  y = loss_history[int(start/sampling_rate):int(stop/sampling_rate)]
 
   fig, ax = plt.subplots(figsize=size)
   ax.plot(x, y, '.-')
