@@ -220,11 +220,12 @@ def split(img_list, box_list, class_list, adv_box_list, split):
 
   return img_list_a, box_list_a, class_list_a, adv_box_list_a, img_list_b, box_list_b, class_list_b, adv_box_list_b
 
-def batch(img_list, box_list, class_list, adv_box_list, batch_ratio):
+def batch(img_list, box_list, class_list, adv_box_list, batch_size):
   """Sample a batch of dataset randomly according to the batch ratio
   """
   full_size = len(adv_box_list)
-  batch_size = round(full_size * batch_ratio)
+  if batch_size > full_size:
+    raise Exception("Batch size is larger than dataset size")
 
   all_keys = list(range(full_size))
   random.shuffle(all_keys)
