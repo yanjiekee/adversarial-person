@@ -152,7 +152,7 @@ def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_dete
 
   This is to reduce the number of retracing during training phase
   """
-  if max_detection < 0:
+  if max_detections < 0:
     raise Exception("Maximum detection cannot be smaller than zero")
 
   num_of_removed_item = 0
