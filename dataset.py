@@ -228,7 +228,7 @@ def batch(img_list, box_list, class_list, adv_box_list, batch_ratio):
 
   all_keys = list(range(full_size))
   random.shuffle(all_keys)
-  keys = all_keys[batch_size:]
+  keys = all_keys[:batch_size]
 
   img_batch      = [img_list[key] for key in keys]
   box_batch      = [box_list[key] for key in keys]
