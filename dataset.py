@@ -52,7 +52,7 @@ def tensorfy_and_resize_img(img_list_np, size):
 
   return img_list_ts
 
-def get_label_dataset_fn(model, img_size):
+def get_label_dataset_fn(model, img_size, label_threshold=0.8):
   # Create a graph execution for faster future use
   @tf.function(input_signature=(
       tf.TensorSpec(shape=(1, img_size, img_size, 3), dtype=tf.float32),
@@ -76,7 +76,7 @@ def get_label_dataset_fn(model, img_size):
       e = 0
 
       for i in range(n):
-        if(tf.squeeze(predictions['detection_scores']).numpy()[i] > 0.8):
+        if(tf.squeeze(predictions['detection_scores']).numpy()[i] > label_threshold):
           e += 1
           boxes[i] = tf.squeeze(predictions['detection_boxes']).numpy()[i]
           classes[i] = tf.squeeze(predictions['detection_classes']).numpy()[i] + 1
@@ -136,6 +136,28 @@ def filter_single_detection(img_list_ts, box_list_np, class_list_np):
   num_of_removed_item = 0
   for id in range(len(img_list_ts)):
     if len(class_list_np[id - num_of_removed_item]) == 1:
+      # Remove list[id]
+      del img_list_ts[id - num_of_removed_item]
+      del box_list_np[id - num_of_removed_item]
+      del class_list_np[id - num_of_removed_item]
+      num_of_removed_item += 1
+      break
+
+  return img_list_ts, box_list_np, class_list_np
+
+def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_detections=4):
+  """Remove data with excessive detection, including non-person class
+  This is a workaround in model.provide_groundtruth() function where function
+  cannot receive empty list as argument
+
+  This is to reduce the number of retracing during training phase
+  """
+  if max_detection < 0:
+    raise Exception("Maximum detection cannot be smaller than zero")
+
+  num_of_removed_item = 0
+  for id in range(len(img_list_ts)):
+    if len(class_list_np[id - num_of_removed_item]) > max_detections:
       # Remove list[id]
       del img_list_ts[id - num_of_removed_item]
       del box_list_np[id - num_of_removed_item]
