@@ -43,7 +43,7 @@ def transform(box, patch,
     An adversarial patch mask of shape (1, 640, 640, 3) with range [0, 255], and where irrelevant spaces are occupied with constant -1
   """
   # Convert patch to range [0, 255], then fudge the patch by 1 such that the black pixel is (1, 1, 1) instead of (0, 0, 0)
-  patch = tf.add(tf.math.round(tf.multiply(tf.squeeze(patch), 255.0)), 1.0)
+  patch = tf.add(tf.multiply(patch, 255.0), 1.0)
 
   # Get box information
   denormalised_box = tf.math.round(tf.multiply(box, mask_width))
@@ -84,7 +84,7 @@ def transform(box, patch,
   # Fudge the actual black pixel back to (0, 0, 0) whereas the padded area are now (-1, -1, -1)
   transformed_patch = tf.subtract(transformed_patch, 1.0)
 
-  return tf.expand_dims(transformed_patch, axis=0)
+  return transformed_patch
 
 @tf.function(input_signature=(
     tf.TensorSpec(shape=[None, 1024, 1024, 3], dtype=tf.float32),
