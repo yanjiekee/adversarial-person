@@ -16,7 +16,7 @@ def init(height=100, width=100, random=False, random_seed=14):
 
   return adversarial_patch
 
-def print(patch):
+def show(patch):
   """Print adversarial patch using matplotlib"""
   squeezed_patch = tf.squeeze(patch)
   plt.imshow(squeezed_patch.numpy())
@@ -82,7 +82,7 @@ def transform(box, patch,
 
   # Padded pixel = [0.0]
   # Fudge the actual black pixel back to (0, 0, 0) whereas the padded area are now (-1, -1, -1)
-  transformed_patch = tf.subtract(transformed_patch, 2)
+  transformed_patch = tf.subtract(transformed_patch, 1.0)
 
   return tf.expand_dims(transformed_patch, axis=0)
 
