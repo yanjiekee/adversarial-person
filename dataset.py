@@ -170,6 +170,11 @@ def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_dete
 def _calc_iou(box1, box2):
   """Calculate the Intersection over Union between two bounding box
   """
+  if box1 == box2:
+    # During classification loss adversarial training,
+    # adversarial box is not removed from box list
+    return 0.0
+
   ymin1, xmin1, ymax1, xmax1 = np.moveaxis(box1 * 100, 0, 0)
   ymin2, xmin2, ymax2, xmax2 = np.moveaxis(box2 * 100, 0, 0)
 
