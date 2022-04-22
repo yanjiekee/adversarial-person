@@ -170,7 +170,7 @@ def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_dete
 def _calc_iou(box1, box2):
   """Calculate the Intersection over Union between two bounding box
   """
-  if box1 == box2:
+  if (box1 == box2).all():
     # During classification loss adversarial training,
     # adversarial box is not removed from box list
     return 0.0
