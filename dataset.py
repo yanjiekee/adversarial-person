@@ -107,7 +107,7 @@ def filter_no_person(img_list_ts, box_list_np, class_list_np, person_class_id):
 
   return img_list_ts, box_list_np, class_list_np
 
-def filter_multiple_person(img_list_ts, box_list_np, class_list_np, person_class_id):
+def filter_multiple_person(img_list_ts, box_list_np, class_list_np, person_class_id, max_person=1):
   """Remove data with more than one person detected
   """
 
@@ -117,7 +117,7 @@ def filter_multiple_person(img_list_ts, box_list_np, class_list_np, person_class
     for c in class_list_np[id - num_of_removed_item]:
       if c == person_class_id:
         num_of_person += 1
-        if num_of_person > 1:
+        if num_of_person > max_person:
           # Remove list[id]
           del img_list_ts[id - num_of_removed_item]
           del box_list_np[id - num_of_removed_item]
