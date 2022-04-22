@@ -167,6 +167,42 @@ def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_dete
 
   return img_list_ts, box_list_np, class_list_np
 
+def _calc_iou(box1, box2):
+  """Calculate the Intersection over Union between two bounding box
+  """
+  ymin1, xmin1, ymax1, xmax1 = np.moveaxis(box1 * 100, 0, 0)
+  ymin2, xmin2, ymax2, xmax2 = np.moveaxis(box2 * 100, 0, 0)
+
+  x_overlap = max(0, (min(xmax1, xmax2) - max(xmin1, xmin2)))
+  y_overlap = max(0, (min(ymax1, ymax2) - max(ymin1, ymin2)))
+  area_intersect = x_overlap * y_overlap
+
+  area_box1 = (xmax1 - xmin1) * (ymax1 - ymin1)
+  area_box2 = (xmax2 - xmin2) * (ymax2 - ymin2)
+  area_union = area_box1 + area_box2 - area_intersect * 2
+
+  iou = area_intersect / area_union
+  return iou
+
+def filter_large_iou(img_list_ts, box_list_np, class_list_np, adv_box_list_np, iou_threshold=0.25):
+  """Remove data that has large IOU between the adversarial person class and any other detection(s)
+  """
+
+  num_of_removed_item = 0
+  for id in range(len(img_list_ts)):
+    for b in box_list_np[id - num_of_removed_item]:
+      iou = _calc_iou(adv_box_list_np[id - num_of_removed_item], b)
+      if iou > iou_threshold:
+        # Remove list[id]
+        del img_list_ts[id - num_of_removed_item]
+        del box_list_np[id - num_of_removed_item]
+        del class_list_np[id - num_of_removed_item]
+        del adv_box_list_np[id - num_of_removed_item]
+        num_of_removed_item += 1
+        break
+
+  return img_list_ts, box_list_np, class_list_np, adv_box_list_np
+
 def generate_mallicious_objectness_gt(box_list_np, class_list_np, person_class_id):
   """Select the person class with highest confidence and remove it from
   the dataset list, return the detection's bounding boxes to generate
