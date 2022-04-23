@@ -42,6 +42,25 @@ def fetch(img_dir):
 
   return img_list_np
 
+def _save_numpy_array_as_image(img_np, path):
+  """Save a numpy array as an image file
+  """
+  img = Image.fromarray(img_np.astype(np.uint8))
+  img.save(path)
+
+def save(img_list_ts, img_dir):
+  """Convert a list of image tensor into numpy array, then save the list as images file in given directory
+
+  This speed up the progress when the same filtering is required
+  """
+  img_count = 0
+  for img_ts in img_list_ts:
+    img_np = img_ts.numpy()
+    img_pil = Image.fromarray(img_np.astype(np.uint8))
+    img_filename = str(img_count) + ".png"
+    img_pil.save(os.path.join(img_dir, img_filename))
+    img_count += 1
+
 def tensorfy_and_resize_img(img_list_np, size):
   """Convert to tensor and resize to fit detect()'s input signature which is
   tf.float32 shape [1, 1024, 1024, 3]
