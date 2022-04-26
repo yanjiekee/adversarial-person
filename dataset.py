@@ -165,10 +165,7 @@ def filter_single_detection(img_list_ts, box_list_np, class_list_np):
   return img_list_ts, box_list_np, class_list_np
 
 def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_detections=4):
-  """Remove data with excessive detection, including non-person class
-  This is a workaround in model.provide_groundtruth() function where function
-  cannot receive empty list as argument
-
+  """Remove data with excessive detection, including non-person class.
   This is to reduce the number of retracing during training phase
   """
   if max_detections < 0:
@@ -177,6 +174,22 @@ def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_dete
   num_of_removed_item = 0
   for id in range(len(img_list_ts)):
     if len(class_list_np[id - num_of_removed_item]) > max_detections:
+      # Remove list[id]
+      del img_list_ts[id - num_of_removed_item]
+      del box_list_np[id - num_of_removed_item]
+      del class_list_np[id - num_of_removed_item]
+      num_of_removed_item += 1
+      break
+
+  return img_list_ts, box_list_np, class_list_np
+
+def filter_no_detection(img_list_ts, box_list_np, class_list_np):
+  """Remove data with no detection.
+  """
+
+  num_of_removed_item = 0
+  for id in range(len(img_list_ts)):
+    if len(class_list_np[id - num_of_removed_item]) == 0:
       # Remove list[id]
       del img_list_ts[id - num_of_removed_item]
       del box_list_np[id - num_of_removed_item]
