@@ -120,7 +120,6 @@ def filter_detection_count(img_list_ts, box_list_np, class_list_np, min=1, max=5
       del box_list_np[id - num_of_removed_item]
       del class_list_np[id - num_of_removed_item]
       num_of_removed_item += 1
-      break
 
   return img_list_ts, box_list_np, class_list_np
 
