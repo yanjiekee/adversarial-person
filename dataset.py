@@ -107,95 +107,39 @@ def get_label_dataset_fn(model, img_size, label_threshold=0.8):
 
   return label_dataset_fn
 
-def filter_no_person(img_list_ts, box_list_np, class_list_np, person_class_id):
-  """Remove data with no person detected
+def filter_detection_count(img_list_ts, box_list_np, class_list_np, min=1, max=5):
+  """Set a minimum and maximum number of detection in the training image
+  """
+  num_of_removed_item = 0
+  for id in range(len(img_list_ts)):
+    num_of_detection = len(class_list_np[id - num_of_removed_item])
+
+    if num_of_detection < min or num_of_detection > max:
+      # Remove list[id]
+      del img_list_ts[id - num_of_removed_item]
+      del box_list_np[id - num_of_removed_item]
+      del class_list_np[id - num_of_removed_item]
+      num_of_removed_item += 1
+      break
+
+  return img_list_ts, box_list_np, class_list_np
+
+def filter_person_count(img_list_ts, box_list_np, class_list_np, person_class_id, min=1, max=3):
+  """Set a minimum and maximum number of person detection in the training image
   """
   num_of_removed_item = 0
   for id in range(len(img_list_ts)):
     num_of_person = 0
-    for c in class_list_np[id - num_of_removed_item]:
-      if c == person_class_id:
+    for cls in class_list_np[id - num_of_removed_item]:
+      if cls == person_class_id:
         num_of_person += 1
 
-    if num_of_person == 0:
+    if num_of_person < min or num_of_person > max:
       # Remove list[id]
       del img_list_ts[id - num_of_removed_item]
       del box_list_np[id - num_of_removed_item]
       del class_list_np[id - num_of_removed_item]
       num_of_removed_item += 1
-
-  return img_list_ts, box_list_np, class_list_np
-
-def filter_multiple_person(img_list_ts, box_list_np, class_list_np, person_class_id, max_person=1):
-  """Remove data with more than one person detected
-  """
-
-  num_of_removed_item = 0
-  for id in range(len(img_list_ts)):
-    num_of_person = 0
-    for c in class_list_np[id - num_of_removed_item]:
-      if c == person_class_id:
-        num_of_person += 1
-        if num_of_person > max_person:
-          # Remove list[id]
-          del img_list_ts[id - num_of_removed_item]
-          del box_list_np[id - num_of_removed_item]
-          del class_list_np[id - num_of_removed_item]
-          num_of_removed_item += 1
-          break
-
-  return img_list_ts, box_list_np, class_list_np
-
-def filter_single_detection(img_list_ts, box_list_np, class_list_np):
-  """Remove data with only one detection, including non-person class
-  This is a workaround in model.provide_groundtruth() function where function
-  cannot receive empty list as argument
-  """
-
-  num_of_removed_item = 0
-  for id in range(len(img_list_ts)):
-    if len(class_list_np[id - num_of_removed_item]) == 1:
-      # Remove list[id]
-      del img_list_ts[id - num_of_removed_item]
-      del box_list_np[id - num_of_removed_item]
-      del class_list_np[id - num_of_removed_item]
-      num_of_removed_item += 1
-      break
-
-  return img_list_ts, box_list_np, class_list_np
-
-def filter_excessive_detection(img_list_ts, box_list_np, class_list_np, max_detections=4):
-  """Remove data with excessive detection, including non-person class.
-  This is to reduce the number of retracing during training phase
-  """
-  if max_detections < 0:
-    raise Exception("Maximum detection cannot be smaller than zero")
-
-  num_of_removed_item = 0
-  for id in range(len(img_list_ts)):
-    if len(class_list_np[id - num_of_removed_item]) > max_detections:
-      # Remove list[id]
-      del img_list_ts[id - num_of_removed_item]
-      del box_list_np[id - num_of_removed_item]
-      del class_list_np[id - num_of_removed_item]
-      num_of_removed_item += 1
-      break
-
-  return img_list_ts, box_list_np, class_list_np
-
-def filter_no_detection(img_list_ts, box_list_np, class_list_np):
-  """Remove data with no detection.
-  """
-
-  num_of_removed_item = 0
-  for id in range(len(img_list_ts)):
-    if len(class_list_np[id - num_of_removed_item]) == 0:
-      # Remove list[id]
-      del img_list_ts[id - num_of_removed_item]
-      del box_list_np[id - num_of_removed_item]
-      del class_list_np[id - num_of_removed_item]
-      num_of_removed_item += 1
-      break
 
   return img_list_ts, box_list_np, class_list_np
 
