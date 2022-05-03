@@ -159,7 +159,7 @@ def _calc_iou(box1, box2):
 
   area_box1 = (xmax1 - xmin1) * (ymax1 - ymin1)
   area_box2 = (xmax2 - xmin2) * (ymax2 - ymin2)
-  area_union = area_box1 + area_box2 - area_intersect * 2
+  area_union = area_box1 + area_box2 - area_intersect
 
   iou = area_intersect / area_union
   return iou
